@@ -1,0 +1,68 @@
+import os
+
+import logging
+import discord
+from discord.ext import commands
+from bardapi import BardAsync
+
+# Токен Bard API
+BARD_API_TOKEN = 'agiWSDNrJjW0g_FKlo93F0t4AXpvHXiC4wJj_abOMMlFNne3Jq3dsMMpmYHe5cuspTc2Jw.'
+
+# Токен Discord
+DISCORD_TOKEN = 'OTcxNjA0NjgzNjExMzQwODUw.YnM7sw.OOpzgH0zw6vhTDdG2Fu2Tf6dx3Q'
+
+# ID чата
+CHAT_ID = os.getenv('929071478484377663')
+
+# ID канала
+CHANNEL_ID = os.getenv('929071478484377660')
+
+def get_prefix(message):
+    return commands.when_mentioned_or('ваш_префикс')(message)
+
+async def respond_to_message(message: discord.Message):
+    prompt = message.content
+
+    # Create a Bard object
+    bard = BardAsync(BARD_API_TOKEN)
+    print('Current Bard API Token', BARD_API_TOKEN)
+
+    # Generate a response
+    async def generate_response(prompt):
+        response = await bard.get_answer(prompt)
+        return response['content']
+
+    response = await generate_response(prompt)
+
+    # Send the response
+    channel = message.channel
+    await channel.send(response)
+
+async def on_message(message):
+    if message.author.id != client.user.id:
+        message.channel.id == "CHANNEL_ID:"
+        logger.info(f"Received message: {message.content}")
+        if message.content.startswith(get_prefix()):
+            # Process the command
+            await client.process_commands(message)
+
+client = commands.Bot(command_prefix='.', self_bot=True)
+
+@client.listen()  # Используем listen для прослушивания
+async def on_message(message):
+    if message.author.id != client.user.id:
+        await client.process_commands(message)
+        await respond_to_message(message)
+
+def main():
+    client.run(DISCORD_TOKEN)
+
+if __name__ == '__main__':
+    logger = logging.getLogger('selfbot')
+    logger.setLevel(logging.DEBUG)
+    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    ch = logging.StreamHandler()
+    ch.setFormatter(formatter)
+    logger.addHandler(ch)
+
+    main()
